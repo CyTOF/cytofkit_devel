@@ -1,13 +1,20 @@
 cytofkit: an integrated mass cytometry data analysis pipeline
 ============
 
+**NOTE**: <u>This is the development version of cytofkit pacakge</u>
+
 ### cytofkit
 
 This package is designed to facilitate the analysis workflow of mass cytometry data with automatic subset identification and mapping of cellular progression. Both command line and a GUI client are provided for executing the workflow easily.
 
 ### Installation
 
-To install the package from Bioconductor, use:
+The offical and stable version, please refer to 
+
+- [Bioconductor](https://www.bioconductor.org/packages/cytofkit/)
+- [github](https://github.com/JinmiaoChenLab/cytofkit)
+
+And install from Bioconductor, use:
 
 ``` r
 ## try http:// if https:// URLs are not supported
@@ -15,13 +22,13 @@ source("https://bioconductor.org/biocLite.R")
 biocLite("cytofkit")
 ```
 
-To install the latest version from the github repository, use:
+To install this development version, use:
 
 ``` r
 if(!require(devtools)){
   install.packages("devtools") # If not already installed
 }
-devtools::install_github("JinmiaoChenLab/cytofkit")
+devtools::install_github("haoeric/cytofkit_devel")
 ```
 
 ### Usage

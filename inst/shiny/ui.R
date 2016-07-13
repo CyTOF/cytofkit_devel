@@ -154,7 +154,15 @@ shinyUI(fluidPage(
                                                 hr(),
                                                 uiOutput("P_markerSelect"),
                                                 hr(),
-                                                checkboxInput("P_reverseOrder", label = "Reverse Order", value = FALSE),
+                                                fluidRow(
+                                                    column(2,
+                                                           checkboxInput("P_reverseOrder", label = "Reverse Order", value = FALSE)
+                                                    ),
+                                                    column(3,
+                                                           checkboxInput("P_combineTrends", label = "Combine Trend Lines", value = FALSE)
+                                                    ),
+                                                    column(7)
+                                                ),
                                                 plotOutput("P_markerPlot", width = "100%")
                                                 ),
                                
@@ -163,6 +171,7 @@ shinyUI(fluidPage(
                                                 
                                                 wellPanel(
                                                     h5("Cluster-based down-sampling to remove subset aboundance heterogeneity"),
+                                                    
                                                     fluidRow(
                                                         column(4,
                                                                uiOutput("P_clusterMethod")
@@ -176,6 +185,11 @@ shinyUI(fluidPage(
                                                                            selected = "ceil", width = "100%")
                                                         )
                                                     ),
+                                                    
+                                                    tableOutput('P_clusterTable'),
+                                                    
+                                                    uiOutput("P_clusterFilter"),
+                                                    hr(),
                                                 
                                                     h5("Diffusionmap Parameters"),
                                                     fluidRow(
@@ -184,8 +198,8 @@ shinyUI(fluidPage(
                                                                            selected = "euclidean", width = "100%")
                                                         ),
                                                         column(6,
-                                                               numericInput("P_outDim", "Output Dimensionality:", value = 3, 
-                                                                            min = 1, max = 5, step = 1, width = "100%")
+                                                               numericInput("P_outDim", "Output Dimensionality:", value = 4, 
+                                                                            min = 1, max = 6, step = 1, width = "100%")
                                                         )
                                                     )
                                                 ),

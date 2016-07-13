@@ -67,9 +67,13 @@ shinyServer(function(input, output, session) {
         
         if(!is.null(v$data)){
             obj <- v$data
+            usedClusters <- input$p_clusterFilter
+            clusterCheck <- obj$clusterRes[[input$p_clusterMethod]] %in% usedClusters
+            mdata <- obj$expressionData[clusterCheck, ]
+            mcluster <- obj$clusterRes[[input$p_clusterMethod]][clusterCheck]
             withProgress(message="Runing Diffusionmap", value=0, {
-                diffmapRes <- cytof_progression(data = obj$expressionData, 
-                                                cluster = obj$clusterRes[[input$p_clusterMethod]], 
+                diffmapRes <- cytof_progression(data = mdata, 
+                                                cluster = mcluster, 
                                                 method = "diffusionmap", 
                                                 distMethod = input$P_distMethod,
                                                 out_dim = input$P_outDim,
@@ -100,6 +104,7 @@ shinyServer(function(input, output, session) {
         }else{
             return(c(names(v$data$clusterRes), 
                      colnames(v$data$expressionData),
+                     "FacetByMarker",
                      "ColorBySample",
                      "DensityPlot",
                      "DotPlot"))
@@ -340,7 +345,7 @@ shinyServer(function(input, output, session) {
         if(is.null(v$data) || is.null(v$data$progressionRes)){
             return(NULL)
         }else{
-            clusterIDs <- unique(v$data$progressionRes$sampleCluster)
+            clusterIDs <- sort(unique(v$data$progressionRes$sampleCluster))
             selectizeInput('p_clusterSelect', 'Select Clusters:', 
                         choices = clusterIDs, selected = clusterIDs, 
                         multiple = TRUE, width = "100%")
@@ -358,21 +363,58 @@ shinyServer(function(input, output, session) {
                            cluster = v$data$progressionRes$sampleCluster, 
                            v$data$progressionRes$progressionData,
                            check.names = FALSE)
-        pp <- cytof_progressionPlot(data, 
-                                    markers = input$p_markerSelect, 
-                                    clusters = input$p_clusterSelect, 
-                                    orderCol = input$p_orderBy, 
-                                    clusterCol = "cluster", 
-                                    reverseOrder = input$P_reverseOrder,
-                                    addClusterLabel = input$addLabel,
-                                    clusterLabelSize = input$P_LabelSize2,
-                                    segmentSize = 0.5,
-                                    min_expr = NULL) 
+        if(input$P_combineTrends){
+            pp <- cytof_expressionTrends(data, 
+                                        markers = input$p_markerSelect, 
+                                        clusters = input$p_clusterSelect, 
+                                        orderCol = input$p_orderBy, 
+                                        clusterCol = "cluster", 
+                                        reverseOrder = input$P_reverseOrder,
+                                        addClusterLabel = input$addLabel,
+                                        clusterLabelSize = input$P_LabelSize2,
+                                        segmentSize = 0.5,
+                                        min_expr = NULL) 
+        }else{
+            pp <- cytof_progressionPlot(data, 
+                                        markers = input$p_markerSelect, 
+                                        clusters = input$p_clusterSelect, 
+                                        orderCol = input$p_orderBy, 
+                                        clusterCol = "cluster", 
+                                        reverseOrder = input$P_reverseOrder,
+                                        addClusterLabel = input$addLabel,
+                                        clusterLabelSize = input$P_LabelSize2,
+                                        segmentSize = 0.5,
+                                        min_expr = NULL) 
+        }
+        
         plot(pp)
                                           
     }, height = 800, width = 850)
     
     ## Run Diffusionmap
+    
+    output$P_clusterTable <- renderTable({
+        if(is.null(v$data) || is.null(clusterMethods())){
+            return(NULL)
+        }else{
+            clusterTable <- t(as.matrix(table(v$data$clusterRes[[input$p_clusterMethod]])))
+            out <- as.data.frame(clusterTable, row.names = "Cell Counts")
+            colnames(out) <- paste("Cluster", colnames(out))
+            out
+        }   
+    })
+    
+    output$P_clusterFilter <- renderUI({
+        if(is.null(v$data) || is.null(clusterMethods())){
+            return(NULL)
+        }else{
+            obj <- v$data
+            clusterIDs <- sort(unique(obj$clusterRes[[input$p_clusterMethod]]))
+            selectizeInput('p_clusterFilter', 'Filter Clusters:', 
+                           choices = clusterIDs, selected = clusterIDs, 
+                           multiple = TRUE, width = "100%")
+        }   
+    })
     
     output$P_clusterMethod <- renderUI({
         if(is.null(v$data) || is.null(clusterMethods())){
