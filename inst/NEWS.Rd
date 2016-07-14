@@ -6,6 +6,7 @@
     \itemize{
       \item Added cluster filtering in runing diffusion map on shiny APP
       \item Added combined view of marker expression patten on scatter plot and marker expression trend on subset progression
+      \item Smart handle of non-transformation markers(FSC,SSC), and exclude of channels(like Event, Time) when markers==NULL specified in cytof_exprsExtract function
     }
   }
 }
