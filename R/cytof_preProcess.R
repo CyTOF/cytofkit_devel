@@ -172,13 +172,13 @@ cytof_exprsExtract <- function(fcsFile,
         }
     }else{
         ## Exclude "Time", "Event" channel
-        exclude_channels <- grep("Time|Event", colnames(fcs), ignore.case = TRUE)
-        marker_id <- setdiff(seq_along(colnames(fcs)), exclude_channels)
+        exclude_channels <- grep("Time|Event", colnames(fcs@exprs), ignore.case = TRUE)
+        marker_id <- setdiff(seq_along(colnames(fcs@exprs)), exclude_channels)
     }
     
     ## Identify markers doesn't need transformation
     ## "FSC-x", "SSC-x"
-    noTrans_channels <- grep("FSC|SSC", colnames(fcs), ignore.case = TRUE)
+    noTrans_channels <- grep("FSC|SSC", colnames(fcs@exprs), ignore.case = TRUE)
     transMarker_id <- setdiff(marker_id, noTrans_channels)
    
     ## exprs transformation
