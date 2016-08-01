@@ -4,11 +4,18 @@
 \section{Changes in version 1.5.7 (2016-07-13)}{
   \subsection{MODIFICATION}{
     \itemize{
-      \item Added cluster filtering in runing diffusion map on shiny APP
-      \item Added combined view of marker expression patten on scatter plot and marker expression trend on subset progression
       \item Smart handle of non-transformation markers(FSC,SSC), and exclude of channels(like Event, Time) when markers==NULL specified in cytof_exprsExtract function
     }
   }
+  
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item redesign the tab panels to: Cluster Plot, Marker Plot, Subset Progression 
+      \item Added cluster filtering in runing diffusion map on shiny APP
+      \item Added combined view of marker expression patten on scatter plot and marker expression trend on subset progression
+      \item Added stack density plot in Marker Plot
+      \item Added cluster annotation (Label Clusters) in Marker Plot
+    }
 }
 
 
