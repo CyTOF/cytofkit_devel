@@ -1,7 +1,7 @@
 cytofkit: an integrated mass cytometry data analysis pipeline
 ============
 
-**NOTE**: <u>This is the development version of cytofkit pacakge</u>
+**NOTE**: <u>This is the development version of cytofkit package</u>
 
 ### cytofkit
 
@@ -14,7 +14,7 @@ The offical and stable version, please refer to
 - [Bioconductor](https://www.bioconductor.org/packages/cytofkit/)
 - [github](https://github.com/JinmiaoChenLab/cytofkit)
 
-And install from Bioconductor, use:
+Install the stable version from Bioconductor, use:
 
 ``` r
 ## try http:// if https:// URLs are not supported
@@ -22,7 +22,7 @@ source("https://bioconductor.org/biocLite.R")
 biocLite("cytofkit")
 ```
 
-To install this development version, use:
+Install this development version, use:
 
 ``` r
 if(!require(devtools)){
