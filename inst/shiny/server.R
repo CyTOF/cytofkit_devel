@@ -107,8 +107,9 @@ shinyServer(function(input, output, session) {
                 }
             }
             ## either add new cluste or update
-            labelName <- ifelse(grepl("_Subset", labelName), 
-                                clusterMethod, 
+            labelName <- clusterMethod
+            labelName <- ifelse(grepl("_Subset", labelName),
+                                clusterMethod,
                                 paste0(clusterMethod, "_Subset"))
             obj$clusterRes[[labelName]] <- clusterLabels
             
@@ -400,13 +401,16 @@ shinyServer(function(input, output, session) {
             return(NULL)
         }else{
             clusterMethods <- c(names(v$data$clusterRes)) 
-            clusterMethods <- clusterMethods[!grepl("Subset", clusterMethods)]
+            #clusterMethods <- clusterMethods[!grepl("Subset", clusterMethods)]
             selectInput('m_labelCluster', 'Choose Cluster Results to Label:', 
                         choices = clusterMethods, 
                         selected = clusterMethods[1], width = "100%")
         }   
     })
     
+    
+    ## currently use 100 as a limit for cluster numbers 
+    ## --- TODO: use reactiveValues to automatically retrive cluster numbers --- ## 
     lapply(1:100, function(i) {
         output[[paste0('Cluster', i)]] <- renderUI({
             if(is.null(v$data) || is.null(v$data$clusterRes) || is.null(input$m_labelCluster)){
