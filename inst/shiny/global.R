@@ -213,7 +213,7 @@ stackDenistyPlot <- function(data, densityCols, stackFactor,
                              x_text_size = 2, 
                              strip_text_size = 7,
                              legend_text_size = 0.5, 
-                             legendRow = 2,
+                             legendRow = 1,
                              legend_title = "stackName"){
     
     if(!is.numeric(stackRotation)){

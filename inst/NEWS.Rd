@@ -1,6 +1,15 @@
 \name{NEWS}
 \title{News for Package \pkg{cytofkit}}
 
+\section{Changes in version 1.5.8 (2016-08-19)}{
+  \subsection{MODIFICATION}{
+    \itemize{
+      \item add none option for transformation method
+    }
+  }
+}
+
+
 \section{Changes in version 1.5.7 (2016-07-13)}{
   \subsection{MODIFICATION}{
     \itemize{
@@ -15,7 +24,8 @@
       \item Added combined view of marker expression patten on scatter plot and marker expression trend on subset progression
       \item Added stack density plot in Marker Plot
       \item Added cluster annotation (Label Clusters) in Marker Plot
-    }
+      }
+  }
 }
 
 
