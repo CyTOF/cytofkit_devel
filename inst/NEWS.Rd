@@ -4,7 +4,9 @@
 \section{Changes in version 1.5.8 (2016-08-19)}{
   \subsection{MODIFICATION}{
     \itemize{
-      \item add none option for transformation method
+      \item add none option for transformation method to support FCS files with data already transformed
+      \item add "Seperate Plot by Samples" on side panel, remove option "Label Samples by Shapes"
+      \item make sample filter works on subset progression panel, support plot labeld on grid plot 
     }
   }
 }

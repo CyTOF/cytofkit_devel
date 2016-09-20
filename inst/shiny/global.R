@@ -157,9 +157,9 @@ cytof_wrap_colorPlot <- function(data, xlab, ylab, markers, scaleMarker = FALSE,
            }
     )
     zlength <- nrow(data)
-    grid_col_num <- round(sqrt(length(markers)))
+    grid_row_num <- round(sqrt(length(markers)))
     gp <- ggplot(data, aes_string(x = xlab, y = ylab, colour = ev)) + 
-        facet_wrap(~markers, ncol = grid_col_num, scales = "fixed") +
+        facet_wrap(~markers, nrow = grid_row_num, scales = "fixed") +
         scale_colour_gradientn(name = ev, colours = myPalette(zlength)) +
         geom_point(size = pointSize) + theme_bw() + coord_fixed() +
         theme(legend.position = "right") + xlab(xlab) + ylab(ylab) + ggtitle(title) +
