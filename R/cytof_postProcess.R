@@ -506,7 +506,9 @@ cytof_clusterStat <- function(data, markers, cluster = "cluster", sample,
                statData <- data.frame(statData, cluster = clust_sample_count$cluster, check.names = FALSE)
            })
     
-    rownames(statData) <- paste0("cluster_", statData$cluster)
+    if(is.numeric(statData$cluster)){
+        rownames(statData) <- paste0("cluster_", statData$cluster)
+    }
     statData$cluster <- NULL  ## remove cluster column
     
     return(as.matrix(statData))

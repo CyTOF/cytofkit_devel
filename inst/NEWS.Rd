@@ -5,8 +5,11 @@
   \subsection{MODIFICATION}{
     \itemize{
       \item add none option for transformation method to support FCS files with data already transformed
+      \item big updates on the layout of shinyAPP, functions categorized into four panels ("cluster", "marker", "sample", "progression")
       \item add "Seperate Plot by Samples" on side panel, remove option "Label Samples by Shapes"
       \item make sample filter works on subset progression panel, support plot labeld on grid plot 
+      \item added "group samples" function to relabel and group samples in sample panel
+      \item added subset precentage change plot in sample panel
     }
   }
 }

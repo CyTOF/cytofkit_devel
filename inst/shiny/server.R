@@ -59,8 +59,16 @@ shinyServer(function(input, output, session) {
             load(cytofkitObj$datapath)
             v$data <- analysis_results
             
-            v$sampleInfo <- data.frame(cellID = row.names(v$data$expressionData),
-                                       cellSample = sub("_[0-9]*$", "", row.names(v$data$expressionData)))
+            if(is.null(v$data$sampleInfo)){
+                ## creat v$sampleInfo
+                v$sampleInfo <- data.frame(cellID = row.names(v$data$expressionData),
+                                           cellSample = factor(sub("_[0-9]*$", "", row.names(v$data$expressionData))),
+                                           stringsAsFactors = FALSE)
+                v$data$sampleInfo <- v$sampleInfo
+            }else{
+                v$sampleInfo <- v$data$sampleInfo
+            }
+            
             
             if(is.null(v$data$resultDir)){
                 v$data$resultDir <- path.expand("~")  ## default save to home if not specified
@@ -75,10 +83,10 @@ shinyServer(function(input, output, session) {
     })
 
     output$sampleSelect <- renderUI({
-        if(is.null(v$data)){
+        if(is.null(v$data) || is.null(v$sampleInfo)){
             return(NULL)
         }else{
-            sampleNames <- unique(sub("_[0-9]*$", "", row.names(v$data$expressionData)))
+            sampleNames <- unique(as.character(v$sampleInfo$cellSample))
             checkboxGroupInput('samples', NULL, 
                                sampleNames, selected = sampleNames)
         }   
@@ -340,10 +348,12 @@ shinyServer(function(input, output, session) {
             }else{
                 withProgress(message="Generating Stack Density Plot", value=0, {
                     data <- data.frame(v$data$expressionData, check.names = FALSE)
-                    samples <- sub("_[0-9]*$", "", row.names(data))
+                    samples <- as.character(v$sampleInfo$cellSample)
                     mySamples <- samples %in% input$samples
                     sfactors <- data.frame(do.call(cbind, v$data$clusterRes), 
-                                           sample = samples, stringsAsFactors = FALSE, check.names = FALSE)
+                                           sample = samples, 
+                                           stringsAsFactors = FALSE, 
+                                           check.names = FALSE)
                     data <- data[mySamples, ,drop=FALSE]
                     stackFactor <- sfactors[mySamples, input$m_stackFactor]
                     
@@ -421,8 +431,8 @@ shinyServer(function(input, output, session) {
         if(is.null(v$data) || is.null(clusterMethods()) || is.null(input$s_clusterMethod)){
             return(NULL)
         }else{
-            data <- data.frame(sample = sub("_[0-9]*$", "", row.names(v$data$expressionData)),
-                               cluster = v$data$clusterRes[[input$s_clusterMethod]],
+            data <- data.frame(sample = v$sampleInfo$cellSample,
+                               cluster = as.factor(v$data$clusterRes[[input$s_clusterMethod]]),
                                counts = 1)
             statData1 <- aggregate(counts ~ ., data = data, sum)
             statData2 <- aggregate(counts ~ sample, data = data, sum)
@@ -438,20 +448,23 @@ shinyServer(function(input, output, session) {
     output$S_rateChangePlot <- renderPlot({
         if(is.null(v$data) || is.null(clusterMethods()) || is.null(input$s_clusterMethod))
             return(NULL)
-        data <- data.frame(sample = sub("_[0-9]*$", "", row.names(v$data$expressionData)),
-                           cluster = as.factor(v$data$clusterRes[[input$s_clusterMethod]]),
-                           counts = 1)
-        statData1 <- aggregate(counts ~ ., data = data, sum)
-        statData2 <- aggregate(counts ~ sample, data = data, sum)
-        statData <- merge(statData1, statData2, by="sample", suffixes = c("InAll","InSample"))
-        statData$percentageInSample <- statData$countsInAll/statData$countsInSample
-        
-        ggplot(data = statData, aes_string(x="sample", 
-                                           y="percentageInSample", 
-                                           color = "cluster",
-                                           group = "cluster")) + 
-            geom_point(size = 2) + geom_line(size = 1.5) + theme_bw()
-        
+        withProgress(message="Generating Rate Change Plot", value=0, {
+            data <- data.frame(sample = v$sampleInfo$cellSample,
+                               cluster = as.factor(v$data$clusterRes[[input$s_clusterMethod]]),
+                               counts = 1)
+            statData1 <- aggregate(counts ~ ., data = data, sum)
+            statData2 <- aggregate(counts ~ sample, data = data, sum)
+            statData <- merge(statData1, statData2, by="sample", suffixes = c("InAll","InSample"))
+            statData$percentageInSample <- statData$countsInAll/statData$countsInSample
+            
+            ggplot(data = statData, aes_string(x="sample", 
+                                               y="percentageInSample", 
+                                               color = "cluster",
+                                               group = "cluster")) + 
+                geom_point(size = 2) + geom_line(size = 1.5) + 
+                xlab("Cell Group") + ylab("Percentage of Cells in Group") + theme_bw() + 
+                theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"))
+        })
     }, height = 800, width = 850)
     
     
@@ -469,8 +482,8 @@ shinyServer(function(input, output, session) {
         }   
     })
     
-    ## currently use 100 as a limit for cluster numbers 
-    ## --- TODO: use reactiveValues to automatically retrive cluster numbers --- ## 
+    ## currently use 100 as a limit for sample numbers 
+    ## --- TODO: use reactiveValues to automatically retrive sample numbers --- ## 
     lapply(1:100, function(i) {
         output[[paste0('S_sample', i)]] <- renderUI({
             if(is.null(v$data) || is.null(v$sampleInfo)){
@@ -481,41 +494,90 @@ shinyServer(function(input, output, session) {
             if (i <= length(uniqueSampleNames)){
                 x <- uniqueSampleNames[i]
                 textInput(paste0('Sample', i), paste0(x," :"), 
-                          value = "", width = "30%", 
-                          placeholder = "type in sample group name")
+                          value = "", width = "40%", 
+                          placeholder = "Type in the group name for this sample")
             }
         })
     })
     
-    ## update cluster labels
-    observeEvent(input$updatelabel, {
-        if(!is.null(v$data) && !is.null(input$c_labelCluster)){
-            obj <- v$data
-            clusterMethod <- input$c_labelCluster
-            clusterVec<- obj$clusterRes[[clusterMethod]]
-            clusterLabels <- clusterVec
-            clusters <- sort(unique(clusterVec))
+    ## update sample groups
+    observeEvent(input$updateSampleGroups, {
+        if(!is.null(v$data) && !is.null(v$sampleInfo)){
+            v$sampleInfo$originalCellSample <- v$sampleInfo$cellSample
+            uniqueSampleNames <- sort(unique(v$sampleInfo$originalCellSample))
             
-            for (i in 1:length(clusters)){
-                clusteri <- clusters[i]
-                ilabel <- input[[paste0('cluster', i)]]
-                if(ilabel == ""){
-                    clusterLabels[clusterLabels==clusteri] <- "Unknown"
-                }else{
-                    clusterLabels[clusterLabels==clusteri] <- ilabel
-                }
+            sampleGroupNames <- NULL
+            for(i in 1:length(uniqueSampleNames)){
+                sampleGroupNames <- c(sampleGroupNames, input[[paste0("Sample", i)]])
             }
-            ## either add new cluste or update
-            labelName <- clusterMethod
-            labelName <- ifelse(grepl("Annotated_", labelName),
-                                clusterMethod,
-                                paste0("Annotated_", clusterMethod))
-            obj$clusterRes[[labelName]] <- clusterLabels
-            v$data <- obj
-            ## jump to C_panel1
-            updateTabsetPanel(session, "C_clusterTabs", selected = "C_panel1")
+            
+            groupNameLevels <- strsplit(input$sampleGroupLevels, ";", fixed = TRUE)[[1]]
+            
+            if(groupNameLevels != "" && all(sampleGroupNames != "") 
+               && length(groupNameLevels) == length(unique(sampleGroupNames))
+               && all(as.character(groupNameLevels) %in% sampleGroupNames)){
+                sampleMatchID <- match(v$sampleInfo$originalCellSample, uniqueSampleNames)
+                v$sampleInfo$cellSample <- factor(sampleGroupNames[sampleMatchID],
+                                                  levels = groupNameLevels)
+            }else{
+                sampleGroupNames[sampleGroupNames == ""] <- uniqueSampleNames[sampleGroupNames == ""]
+                sampleMatchID <- match(v$sampleInfo$originalCellSample, uniqueSampleNames)
+                v$sampleInfo$cellSample <- factor(sampleGroupNames[sampleMatchID])
+            }
+            
+            cellID_number <- do.call(c, regmatches(v$sampleInfo$cellID, 
+                                                   gregexpr("_[0-9]*$", v$sampleInfo$cellID, perl=T)))
+            
+            ## newCellID = "sampleGroup" + "_cellID" + "globalID" to avoid dumplicates
+            v$sampleInfo$newCellID <- paste0(as.character(v$sampleInfo$cellSample), 
+                                             cellID_number,
+                                             1:length(cellID_number))
+            
+            
+            ## update reactive object v$data
+            expressionData <- v$data$expressionData
+            row.names(expressionData) <- v$sampleInfo$newCellID
+            v$data$expressionData <- expressionData
+
+            ## update reactive object v$sampleInfo
+            if(!is.null(v$data$progressionRes)){
+                sampleExpressData <- v$data$progressionRes$sampleData
+                row.names(sampleExpressData) <- v$sampleInfo$newCellID[match(row.names(sampleExpressData),
+                                                                             v$sampleInfo$cellID)]
+                v$data$progressionRes$sampleData <- sampleExpressData
+            }
+            
+            ## jump to S_panel1
+            updateTabsetPanel(session, "S_sampleTabs", selected = "S_panel1")
         }
     })
+    
+    ## revert old sample names
+    observeEvent(input$revertSampleNames, {
+        if(!is.null(v$data) && !is.null(v$sampleInfo)){
+            if(!is.null(v$sampleInfo$originalCellSample)){
+                v$sampleInfo$cellSample <- v$sampleInfo$originalCellSample
+                v$sampleInfo$originalCellSample <- NULL
+                
+                ## update reactive object v$data
+                expressionData <- v$data$expressionData
+                row.names(expressionData) <- v$sampleInfo$cellID
+                v$data$expressionData <- expressionData
+                
+                ## update reactive object v$sampleInfo
+                if(!is.null(v$data$progressionRes)){
+                    sampleExpressData <- v$data$progressionRes$sampleData
+                    row.names(sampleExpressData) <- v$sampleInfo$cellID[match(row.names(sampleExpressData),
+                                                                              v$sampleInfo$newCellID)]
+                    v$data$progressionRes$sampleData <- sampleExpressData
+                }
+            }
+            ## jump to S_panel1
+            updateTabsetPanel(session, "S_sampleTabs", selected = "S_panel1")
+        }
+    })
+    
+    
     
     ##---------------------------Progression Panel------------------------------
     
@@ -613,7 +675,7 @@ shinyServer(function(input, output, session) {
             if(is.null(v$data) || is.null(v$data$progressionRes) || is.null(p_markerSelect) || is.null(p_clusterSelect) || is.null(input$p_orderBy))
                 return(NULL)
             
-            withProgress(message="Generating Marker Regression Plot", value=0, {
+            withProgress(message="Generating Marker Expression Profile", value=0, {
                 data <- data.frame(v$data$progressionRes$sampleData,
                                    cluster = v$data$progressionRes$sampleCluster, 
                                    v$data$progressionRes$progressionData,

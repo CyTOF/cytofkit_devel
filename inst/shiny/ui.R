@@ -5,7 +5,6 @@ shinyUI(fluidPage(
     hr(),
     fluidRow(
         column(3,
-               
                h4('Load cytofkit RData:'),
                wellPanel(
                    fileInput(inputId = 'cytofkitObj',
@@ -53,7 +52,7 @@ shinyUI(fluidPage(
                            tabPanel("Cluster Panel", fluidPage(
                                hr(),
                                tabsetPanel(id="C_clusterTabs",
-                                           tabPanel(title="Cluster Plot", value="C_pabel1", 
+                                           tabPanel(title="Cluster Plot", value="C_panel1", 
                                                     br(),
                                                     fluidRow(
                                                         column(3,
@@ -72,7 +71,7 @@ shinyUI(fluidPage(
                                                     hr(),
                                                     plotOutput("C_ScatterPlot", width = "80%")
                                                     ),
-                                           tabPanel(title="Annotate Clusters", value="C_pabel2",
+                                           tabPanel(title="Annotate Clusters", value="C_panel2",
                                                     br(),
                                                     uiOutput("C_labelCluster"),
                                                     hr(),
@@ -82,7 +81,7 @@ shinyUI(fluidPage(
                                                     hr(),
                                                     actionButton("updatelabel", "Submit Cluster Label", icon = icon("hand-o-right")),
                                                     hr()),
-                                           tabPanel(title="Run FlowSOM", value="C_pabel3",
+                                           tabPanel(title="Run FlowSOM", value="C_panel3",
                                                     br(),
                                                     h4("FlowSOM Clustering Setup:"),
                                                     hr(),
@@ -98,7 +97,7 @@ shinyUI(fluidPage(
                            tabPanel("Marker Panel", fluidPage(
                                hr(),
                                tabsetPanel(id="M_markerTabs",
-                                   tabPanel(title="Level Plot", value="M_pabel1",
+                                   tabPanel(title="Level Plot", value="M_panel1",
                                             br(),
                                             fluidRow(
                                                 column(3,
@@ -176,7 +175,7 @@ shinyUI(fluidPage(
                            tabPanel("Sample Panel", fluidPage(
                                hr(),
                                tabsetPanel(id="S_sampleTabs",
-                                           tabPanel(title="Cell Counts", value="S_pabel1", 
+                                           tabPanel(title="Cell Counts", value="S_panel1", 
                                                     br(),
                                                     fluidRow(
                                                         column(6,
@@ -198,8 +197,26 @@ shinyUI(fluidPage(
                                                                      plotOutput("S_rateChangePlot", width = "100%"))
                                                     ),
                                            
-                                           tabPanel(title="Group Samples", value="S_pabel2",
-                                                    
+                                           tabPanel(title="Group Samples", value="S_panel2",
+                                                    br(),
+                                                    h4("Type in the Group Name for Each Sample:"),
+                                                    lapply(1:100, function(i) {
+                                                        uiOutput(paste0('S_sample', i))
+                                                    }),
+                                                    hr(),
+                                                    textInput("sampleGroupLevels", "Group Name Levels: (to order the group names)", 
+                                                              value = "", width = "100%",
+                                                              placeholder = "Type in group names in order, seperated by semicolon(;)"),
+                                                    hr(),
+                                                    fluidRow(
+                                                        column(3,
+                                                               actionButton("updateSampleGroups", "Submit New Sample Groups", icon = icon("hand-o-right"))
+                                                        ),
+                                                        column(3, 
+                                                               actionButton("revertSampleNames", "Revert to Old Sample Names", icon = icon("hand-o-right"))
+                                                        ),
+                                                        column(6)
+                                                    ),
                                                     hr())
                                )
                            )),
@@ -220,7 +237,7 @@ shinyUI(fluidPage(
                                                        numericInput("P_PointSize", "Point Size:", value = 3)
                                                 ),
                                                 column(3, 
-                                                       numericInput("P_LabelSize", "Label Size:", value = 12)
+                                                       numericInput("P_LabelSize", "Label Size:", value = 8)
                                                 )
                                             ),
                                             plotOutput("P_scatterPlot", width = "80%")), 
