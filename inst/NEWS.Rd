@@ -10,6 +10,7 @@
       \item make sample filter works on subset progression panel, support plot labeld on grid plot 
       \item added "group samples" function to relabel and group samples in sample panel
       \item added subset precentage change plot in sample panel
+      \item added case checking of Nan of w in autoLgcl function
     }
   }
 }

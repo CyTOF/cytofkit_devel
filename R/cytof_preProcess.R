@@ -128,7 +128,7 @@ cytof_exprsExtract <- function(fcsFile,
     }
     
     ## compensation
-    if(is.matrix(comp)){
+    if(is.matrix(comp) || is.data.frame(comp)){
         fcs <- applyComp(fcs, comp)
         cat("    Compensation is applied on", fcsFile, "\n")
     }else if(isTRUE(comp)) {
@@ -306,7 +306,7 @@ autoLgcl <- function(x, channels, m = 4.5, q = 0.05) {
                 w <- 0  
             } else {
                 w <- (m - log10(t/abs(r)))/2
-                if(w>2) {
+                if(is.nan(w) || w>2) {
                     w <- 0.5
                 }
             }
